@@ -42,7 +42,7 @@ class CameraManager {
     public getViewProjectionMatrix(): BABYLON.Matrix {
         const viewMatrix = this.camera.getViewMatrix();
         const projectionMatrix = this.camera.getProjectionMatrix();
-        return projectionMatrix.multiply(viewMatrix); // Use original matrix
+        return projectionMatrix.multiply(viewMatrix);
     }
 }
 

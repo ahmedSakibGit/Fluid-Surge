@@ -31,22 +31,19 @@ class SceneManager {
     setContainer() {
         this.containerManager.setCube(2);
     }
-
-    getContainerBuffer(): GPUBuffer{
-        return this.containerManager.getContainerGPUBuffer();
+    
+    async getContainderSDFTexture(resolution: number): Promise<BABYLON.RawTexture3D> {
+        return await this.containerManager.getSDFTexture(resolution);
     }
 
-    getContainerBounds(): { min: [number, number, number], max: [number, number, number] } {
-        return this.containerManager.getContainerBounds();
+    getContainerManager() {
+        return this.containerManager;
     }
 
     getContainer(): BABYLON.Mesh {
         return this.containerManager.getCurrentContainer();
     }
 
-    getCameraViewProjectionMatrix(): BABYLON.Matrix {
-        return this.cameraManager.getViewProjectionMatrix();
-    }
 
 }
 

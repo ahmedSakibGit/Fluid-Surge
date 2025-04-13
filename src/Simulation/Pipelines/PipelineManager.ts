@@ -4,6 +4,7 @@ import Render from "./Render/Render";
 import SceneManager from "../../3D/Scene/SceneManager";
 import Compute from "./Compute/Compute";
 import BufferManager from "./Buffer/BufferManager";
+import ContainerManager from "../../3D/Container/ContainerManager";
 
 class PipelineManager {
     private webGPUManager: WebGPUManager;
@@ -23,9 +24,9 @@ class PipelineManager {
         this.renderPipeline = new Render(this.webGPUManager, this.simulationData, this.scene, this.bufferManager);
     }
 
-    async init({ positions }: { positions: Float32Array }) {
-        this.bufferManager.init(positions);
-        this.computePipeline.init();
+    init({ positions, sdfTexture }: { positions: Float32Array, sdfTexture: BABYLON.RawTexture3D }, containerManager: ContainerManager) {
+        this.bufferManager.init(positions, sdfTexture);
+        this.computePipeline.init(containerManager);
         this.renderPipeline.init();
         this.startRenderLoop();
         this.startComputeInterval();

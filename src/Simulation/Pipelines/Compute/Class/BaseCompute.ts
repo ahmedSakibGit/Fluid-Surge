@@ -9,6 +9,7 @@ class BaseCompute {
     simulationData: SimulationData;
     bufferManager: BufferManager;
     computeShader: BABYLON.ComputeShader | null = null;
+    uniformBuffer: BABYLON.UniformBuffer;
     data = {
         binding: {},
         shader: "",
@@ -24,7 +25,7 @@ class BaseCompute {
         },
         uniforms: [] as {
             name: string;
-            entries: { name: string; type: string; value: number }[];
+            entries: { name: string; type: string; value: number | BABYLON.Matrix | Float32Array }[];
         }[],
         buffers: [] as {
             name: string;
@@ -37,6 +38,7 @@ class BaseCompute {
         this.webGPUManager = webGPUManager;
         this.simulationData = simulationData;
         this.bufferManager = bufferManager;
+        this.uniformBuffer = new BABYLON.UniformBuffer(this.webGPUManager.getEngine());
     }
 
     setCompute(name: string, binding: BABYLON.ComputeBindingMapping, bytesPerThreadShared: number, computeShader: string, elementCount: number) {
@@ -65,14 +67,19 @@ class BaseCompute {
         }
 
         for (const uniform of this.data.uniforms) {
-            const shaderUniform = new BABYLON.UniformBuffer(this.webGPUManager.getEngine());
             for (const entry of uniform.entries) {
                 switch (entry.type) {
                     case "uint":
-                        shaderUniform.addUniform(entry.name, 1);
+                        this.uniformBuffer.addUniform(entry.name, 1);
                         break;
                     case "float":
-                        shaderUniform.addUniform(entry.name, 1.0);
+                        this.uniformBuffer.addUniform(entry.name, 1.0);
+                        break;
+                    case "mat4":
+                        this.uniformBuffer.addMatrix(entry.name, BABYLON.Matrix.Identity());
+                        break;
+                    case "vec4":
+                        this.uniformBuffer.addUniform(entry.name, 4);
                         break;
                     default:
                         break;
@@ -82,21 +89,31 @@ class BaseCompute {
             for (const entry of uniform.entries) {
                 switch (entry.type) {
                     case "uint":
-                        shaderUniform.updateUInt(entry.name, entry.value);
+                        this.uniformBuffer.updateUInt(entry.name, entry.value as number);
                         break;
                     case "float":
-                        shaderUniform.updateFloat(entry.name, entry.value);
+
+                        this.uniformBuffer.updateFloat(entry.name, entry.value as number);
+                        break;
+                    case "mat4":
+                        this.uniformBuffer.updateMatrix(entry.name, entry.value as BABYLON.Matrix);
+                        break;
+                    case "vec4":
+                        if (Array.isArray(entry.value)) {
+                            this.uniformBuffer.updateFloat4(entry.name, entry.value[0], entry.value[1], entry.value[2], entry.value[3]);
+                        }
                         break;
                     default:
                         break;
                 }
             }
 
-            shaderUniform.update();
-            this.computeShader.setUniformBuffer(uniform.name, shaderUniform);
+            this.uniformBuffer.update();
+            this.computeShader.setUniformBuffer(uniform.name, this.uniformBuffer);
         }
 
     }
+    
 
     update() {
         if (!this.computeShader) return;

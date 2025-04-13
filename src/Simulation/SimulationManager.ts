@@ -3,6 +3,7 @@ import SceneManager from "../3D/Scene/SceneManager";
 import WebGPUManager from "../WebGPU/WebGPUManger";
 import Fluidmanager from "./FluidManager";
 import PipelineManager from "./Pipelines/PipelineManager";
+import ContainerManager from "../3D/Container/ContainerManager";
 
 class SimulationManager {
     private simulationData: SimulationData;
@@ -10,6 +11,7 @@ class SimulationManager {
     private webGPUManager: WebGPUManager;
     private fluidManager: Fluidmanager;
     private pipelineManager: PipelineManager;
+    private containerManager: ContainerManager
 
     constructor(sceneManager: SceneManager, webGPUManager: WebGPUManager) {
         this.simulationData = this.getSimulationData();
@@ -17,13 +19,14 @@ class SimulationManager {
         this.webGPUManager = webGPUManager;
         this.fluidManager = new Fluidmanager(this.simulationData, this.sceneManager);
         this.pipelineManager = new PipelineManager(this.webGPUManager, this.simulationData, this.sceneManager);
+        this.containerManager = this.sceneManager.getContainerManager();
     }
 
     async init() {
         this.sceneManager.setContainer();
-        this.simulationData.setBuffer(this.sceneManager.getContainerBuffer());
         this.fluidManager.init();
-        await this.pipelineManager.init(this.fluidManager.getParticleData());
+        const texture: BABYLON.RawTexture3D = await this.sceneManager.getContainderSDFTexture(this.simulationData.getSDFTextureResolution());
+        this.pipelineManager.init({positions: this.fluidManager.getParticleData(), sdfTexture: texture}, this.containerManager);
     }
 
     getSimulationData(): SimulationData {
@@ -35,7 +38,8 @@ class SimulationManager {
             filled: 0.5,
             fluidCount: 200000,
             buffer: null,
-            fluidToGridRatio: 0.6667
+            fluidToGridRatio: 0.6667,
+            sdfTextureResolution: 64
         };
 
         return new SimulationData(data);

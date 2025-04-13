@@ -7,7 +7,8 @@ import GridClearShader from "../Shaders/gridClear.wgsl?raw";
 class GridClear extends BaseCompute  {
     binding: BABYLON.ComputeBindingMapping = {
         grid: { group: 0, binding: 0 },
-        shaderData: { group: 0, binding: 1 }
+        gridRem: { group: 0, binding: 1 },
+        shaderData: { group: 0, binding: 2 }
     }
 
     bytesPerThreadShared: number = 0;
@@ -38,6 +39,10 @@ class GridClear extends BaseCompute  {
             {
                 name: "grid",
                 buffer: this.bufferManager.getGridBuffer()
+            },
+            {
+                name: "gridRem",
+                buffer: this.bufferManager.getGridRemainderBuffer()
             }
         ];
     }

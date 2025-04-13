@@ -6,11 +6,16 @@ struct ShaderData {
 };
 
 struct Node {
-    values: vec4f
+    vx: i32,
+    vy: i32,
+    vz: i32,
+    mass: i32
 };
 
+
 @group(0) @binding(0) var<storage, read_write> grid: array<Node>;
-@group(0) @binding(1) var<uniform> shaderData: ShaderData;
+@group(0) @binding(1) var<storage, read_write> gridRem: array<Node>;
+@group(0) @binding(2) var<uniform> shaderData: ShaderData;
 
 @compute @workgroup_size(4, 4, 4)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -24,5 +29,13 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         return;
     }
 
-    grid[id].values = vec4f(0.0);
+    grid[id].vx = 0;
+    grid[id].vy = 0;
+    grid[id].vz = 0;
+    grid[id].mass = 0;
+    gridRem[id].vx = 0;
+    gridRem[id].vy = 0;
+    gridRem[id].vz = 0;
+    gridRem[id].mass = 0;
+
 }

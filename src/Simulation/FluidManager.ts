@@ -16,14 +16,14 @@ class FluidManager {
         this.container = this.sceneManager.getContainer();
     }
 
-    getParticleData(): { positions: Float32Array;} {
+    getParticleData(): Float32Array {
         if (!this.container) {
-            throw new Error("Container not found");
+            return new Float32Array();
         }
-    
+
         const boundingBox = this.container.getBoundingInfo().boundingBox;
         const containerSize = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
-        const containerPosition = this.container.position; // Get world position of the container
+        const worldMatrix = this.container.getWorldMatrix();
     
         const fluidCount = this.simulationData.getFluidCount();
         const positions = new Float32Array(fluidCount * 3);
@@ -39,15 +39,17 @@ class FluidManager {
                     const py = -containerSize.y / 2 + y * spacing + spacing / 2;
                     const pz = -containerSize.z / 2 + z * spacing + spacing / 2;
 
-                    positions[count * 3]     = px - containerPosition.x;
-                    positions[count * 3 + 1] = py - containerPosition.y;
-                    positions[count * 3 + 2] = pz - containerPosition.z;
+                    const local = new BABYLON.Vector3(px, py, pz);
+                    const world = BABYLON.Vector3.TransformCoordinates(local, worldMatrix);
+                    positions[count * 3]     = world.x;
+                    positions[count * 3 + 1] = world.y;
+                    positions[count * 3 + 2] = world.z;
                     count++;
                 }
             }
         }
     
-        return { positions};
+        return positions;
     }
 
 }

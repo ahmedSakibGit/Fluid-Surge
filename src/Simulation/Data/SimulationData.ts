@@ -1,28 +1,28 @@
 class SimulationData {
     private filled: number;
     private fluidCount: number;
-    private buffer: GPUBuffer | null;
     private fluidToGridRatio: number;
+    private sdfTextureResolution: number;
     
-    constructor({ filled, fluidCount, buffer, fluidToGridRatio }: { filled: number; fluidCount: number; buffer: GPUBuffer | null; fluidToGridRatio: number}) {
+    constructor({ filled, fluidCount, fluidToGridRatio, sdfTextureResolution }: { filled: number; fluidCount: number; fluidToGridRatio: number, sdfTextureResolution: number}) {
         this.filled = filled;
         this.fluidCount = fluidCount;
-        this.buffer = buffer;
         this.fluidToGridRatio = fluidToGridRatio;
+        this.sdfTextureResolution = sdfTextureResolution;
 
     }
 
-    update({ filled, fluidCount, buffer }: { filled: number; fluidCount: number; buffer: GPUBuffer}): void {
+    update({ filled, fluidCount}: { filled: number; fluidCount: number; buffer: GPUBuffer}): void {
         this.filled = filled;
         this.fluidCount = fluidCount;
-        this.buffer = buffer;
     }
 
     getData() {
         return {
             filled: this.filled,
             fluidCount: this.fluidCount,
-            buffer: this.buffer,
+            fluidToGridRatio: this.fluidToGridRatio,
+            sdfTextureResolution: this.sdfTextureResolution
         };
     }
 
@@ -38,13 +38,10 @@ class SimulationData {
         return this.fluidCount;
     }
 
-    getBuffer(): GPUBuffer | null {
-        return this.buffer;
+    getSDFTextureResolution(): number {
+        return this.sdfTextureResolution;
     }
 
-    setBuffer(buffer: GPUBuffer): void {
-        this.buffer = buffer;
-    }
 
     getGridNodeCount(): number {
         return Math.ceil(this.fluidCount * this.fluidToGridRatio);

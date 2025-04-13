@@ -13,6 +13,16 @@ struct Node {
 };
 
 const FIXED_POINT_MULTIPLIER: f32 = 1e8;
+const STIFFNESS: f32 = 500.0;
+const REST_DENSITY: f32 = 4.0;
+const DYNAMIC_VISCOSITY: f32 = 0.1;
+const DT: f32 = 0.01;
+
+fn encodeFloatToInt(value: f32) -> vec2<i32> {
+    let intPart = i32(value);
+    let remPart = i32((value - f32(intPart)) * FIXED_POINT_MULTIPLIER);
+    return vec2<i32>(intPart, remPart);
+}
 
 @group(0) @binding(0) var<storage, read> positions : array<f32>;
 @group(0) @binding(1) var<storage, read> velocity: array<f32>;
@@ -23,11 +33,6 @@ const FIXED_POINT_MULTIPLIER: f32 = 1e8;
 @group(0) @binding(6) var<storage, read_write> gridRem: array<Node>;
 @group(0) @binding(7) var<uniform> shaderData: ShaderData;
 
-fn encodeFloatToInt(value: f32) -> vec2<i32> {
-    let intPart: i32 = i32(value);
-    let remPart: i32 = i32((value - f32(intPart)) * FIXED_POINT_MULTIPLIER);
-    return vec2<i32>(intPart, remPart);
-}
 
 @compute @workgroup_size(4, 4, 4)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -36,7 +41,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
                       global_id.x;
 
     let id: u32 = globalIndex;
-
     if (id >= shaderData.fluidCount) {
         return;
     }
@@ -56,12 +60,44 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let vx = velocity[id * 3 + 0];
     let vy = velocity[id * 3 + 1];
     let vz = velocity[id * 3 + 2];
-    let v = vec3f(vx, vy, vz);
+    //let v = vec3f(vx, vy, vz);
 
     let c0 = vec3f(c0Buffer[id * 4 + 0], c0Buffer[id * 4 + 1], c0Buffer[id * 4 + 2]);
     let c1 = vec3f(c1Buffer[id * 4 + 0], c1Buffer[id * 4 + 1], c1Buffer[id * 4 + 2]);
     let c2 = vec3f(c2Buffer[id * 4 + 0], c2Buffer[id * 4 + 1], c2Buffer[id * 4 + 2]);
     let C = mat3x3f(c0, c1, c2);
+
+    var density = 0.0;
+    for (var gx: u32 = 0u; gx < 3u; gx++) {
+        for (var gy: u32 = 0u; gy < 3u; gy++) {
+            for (var gz: u32 = 0u; gz < 3u; gz++) {
+                let weight = weights[gx].x * weights[gy].y * weights[gz].z;
+                let cell_x = vec3f(
+                    cell_idx.x + f32(gx) - 1.,
+                    cell_idx.y + f32(gy) - 1.,
+                    cell_idx.z + f32(gz) - 1.
+                );
+                let ix = u32(cell_x.x);
+                let iy = u32(cell_x.y);
+                let iz = u32(cell_x.z);
+                if (ix < shaderData.gridDim &&
+                    iy < shaderData.gridDim &&
+                    iz < shaderData.gridDim) {
+                    let cell_index = ix * shaderData.gridDim * shaderData.gridDim + iy * shaderData.gridDim + iz;
+                    density += (f32(atomicLoad(&grid[cell_index].mass)) / FIXED_POINT_MULTIPLIER) * weight;
+                }
+            }
+        }
+    }
+
+    let volume = 1.0 / density;
+    let pressure = max(-0.0, STIFFNESS * (pow(density / REST_DENSITY, 5.0) - 1.0));
+    var stress = mat3x3f(-pressure, 0, 0, 0, -pressure, 0, 0, 0, -pressure);
+    let dudv = C;
+    let strain = dudv + transpose(dudv);
+    stress += DYNAMIC_VISCOSITY * strain;
+
+    let eq_16_term0 = -volume * 4.0 * stress * DT;
 
     for (var gx: u32 = 0u; gx < 3u; gx++) {
         for (var gy: u32 = 0u; gy < 3u; gy++) {
@@ -72,39 +108,25 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
                     cell_idx.y + f32(gy) - 1.,
                     cell_idx.z + f32(gz) - 1.
                 );
-
                 let cell_dist = (cell_x + vec3f(0.5)) - particlePos;
-                let Q = C * cell_dist;
-                let mass_contrib = weight * 1.0;
-                let vel_contrib = mass_contrib * (v + Q);
+                let momentum = eq_16_term0 * weight * cell_dist;
 
                 let ix = u32(cell_x.x);
                 let iy = u32(cell_x.y);
                 let iz = u32(cell_x.z);
-
                 if (ix < shaderData.gridDim &&
                     iy < shaderData.gridDim &&
                     iz < shaderData.gridDim) {
-
-                    let gridDim = shaderData.gridDim;
-                    let cell_index = (ix * gridDim * gridDim) + (iy * gridDim) + iz;
-
-                    let encodedMass = encodeFloatToInt(mass_contrib);
-                    let encodedVx = encodeFloatToInt(vel_contrib.x);
-                    let encodedVy = encodeFloatToInt(vel_contrib.y);
-                    let encodedVz = encodeFloatToInt(vel_contrib.z);
-
-                    atomicAdd(&grid[cell_index].mass, encodedMass.x);
-                    atomicAdd(&gridRem[cell_index].mass, encodedMass.y);
-
-                    atomicAdd(&grid[cell_index].vx, encodedVx.x);
-                    atomicAdd(&gridRem[cell_index].vx, encodedVx.y);
-
-                    atomicAdd(&grid[cell_index].vy, encodedVy.x);
-                    atomicAdd(&gridRem[cell_index].vy, encodedVy.y);
-
-                    atomicAdd(&grid[cell_index].vz, encodedVz.x);
-                    atomicAdd(&gridRem[cell_index].vz, encodedVz.y);
+                    let cell_index = ix * shaderData.gridDim * shaderData.gridDim + iy * shaderData.gridDim + iz;
+                    let encX = encodeFloatToInt(momentum.x);
+                    let encY = encodeFloatToInt(momentum.y);
+                    let encZ = encodeFloatToInt(momentum.z);
+                    atomicAdd(&grid[cell_index].vx, encX.x);
+                    atomicAdd(&gridRem[cell_index].vx, encX.y);
+                    atomicAdd(&grid[cell_index].vy, encY.x);
+                    atomicAdd(&gridRem[cell_index].vy, encY.y);
+                    atomicAdd(&grid[cell_index].vz, encZ.x);
+                    atomicAdd(&gridRem[cell_index].vz, encZ.y);
                 }
             }
         }

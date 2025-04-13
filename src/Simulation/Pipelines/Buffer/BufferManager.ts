@@ -9,6 +9,8 @@ class BufferManager {
     private C0Buffer: BABYLON.StorageBuffer | null = null;
     private C1Buffer: BABYLON.StorageBuffer | null = null;
     private C2Buffer: BABYLON.StorageBuffer | null = null;
+    private gridRemainderBuffer: BABYLON.StorageBuffer | null = null;
+    private sdfTexture: BABYLON.RawTexture3D | null = null;
     private buffers: BABYLON.StorageBuffer[] = [];
     
     constructor(engine: BABYLON.WebGPUEngine, simulationData: SimulationData) {
@@ -16,8 +18,9 @@ class BufferManager {
         this.simulationData = simulationData;
     }
 
-    init(positions: Float32Array) {
+    init(positions: Float32Array, sdfTexture: BABYLON.RawTexture3D) {
         this.setBuffers(positions);
+        this.sdfTexture = sdfTexture;
     }
 
     setBuffers(positions: Float32Array) {
@@ -30,12 +33,15 @@ class BufferManager {
         BABYLON.Constants.BUFFER_CREATIONFLAG_VERTEX |
         BABYLON.Constants.BUFFER_CREATIONFLAG_READWRITE;
         const otherBufferFlags = BABYLON.Constants.BUFFER_CREATIONFLAG_READWRITE;
+        const velocityvalues = new Float32Array(positions.length).fill(0.0);
+        
         this.positionBuffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, positionBufferFlags);
         this.velocityBuffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.C0Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.C1Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.C2Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.positionBuffer.update(positions);
+        this.velocityBuffer.update(velocityvalues);
         this.buffers.push(this.positionBuffer);
         this.buffers.push(this.velocityBuffer);
         this.buffers.push(this.C0Buffer);
@@ -88,6 +94,9 @@ class BufferManager {
         const gridLength = this.simulationData.getGridNodeCount();
         const bytelength = gridLength * 4 * 4;
         this.gridBuffer = new BABYLON.StorageBuffer(this.engine, bytelength, creationFlags);
+        this.gridRemainderBuffer = new BABYLON.StorageBuffer(this.engine, bytelength, creationFlags);
+        this.buffers.push(this.gridBuffer);
+        this.buffers.push(this.gridRemainderBuffer);
     }
 
     getGridBuffer() {
@@ -96,6 +105,22 @@ class BufferManager {
         }
 
         return this.gridBuffer;
+    }
+
+    getGridRemainderBuffer() {
+        if (!this.gridRemainderBuffer) {
+            throw new Error("Grid remainder buffer not initialized");
+        }
+        
+        return this.gridRemainderBuffer;
+    }
+
+    getSDFTexture() { 
+        if (!this.sdfTexture) {
+            throw new Error("SDF texture not initialized");
+        }
+
+        return this.sdfTexture;
     }
 
 }

@@ -2,9 +2,9 @@ import WebGPUManager from "../../../../WebGPU/WebGPUManger";
 import SimulationData from "../../../Data/SimulationData";
 import BufferManager from "../../Buffer/BufferManager";
 import BaseCompute from "./BaseCompute";
-import p2GShader from "../Shaders/p2g.wgsl?raw";
+import p2GShader from "../Shaders/p2g2.wgsl?raw";
 
-class P2GCompute extends BaseCompute {
+class P2GSecondCompute extends BaseCompute {
     binding: BABYLON.ComputeBindingMapping = {
         positions: { group: 0, binding: 0 },
         velocity: { group: 0, binding: 1 },
@@ -77,4 +77,4 @@ class P2GCompute extends BaseCompute {
     }
 }
 
-export default P2GCompute;
+export default P2GSecondCompute;
