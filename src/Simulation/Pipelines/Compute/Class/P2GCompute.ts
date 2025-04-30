@@ -14,6 +14,8 @@ class P2GCompute extends BaseCompute {
         grid: { group: 0, binding: 5 },
         gridRem: { group: 0, binding: 6 },
         shaderData: { group: 0, binding: 7 },
+        debug: { group: 0, binding: 8 },
+        gridRem2: { group: 0, binding: 9 } 
     }
 
     bytesPerThreadShared: number = 0;
@@ -29,8 +31,7 @@ class P2GCompute extends BaseCompute {
     }
 
     prepSSBO() {
-        const gridNodeCount = this.simulationData.getGridNodeCount();
-        const gridDim = Math.ceil(Math.cbrt(gridNodeCount));
+        const containerMin = this.simulationData.getContainerMin();
         this.data.uniforms = [
             {
                 name: "shaderData",
@@ -38,7 +39,13 @@ class P2GCompute extends BaseCompute {
                     { name: "dispatchX", type: "uint", value: this.data.dispatch.x * this.data.workgroupSize.k },
                     { name: "dispatchY", type: "uint", value: this.data.dispatch.y * this.data.workgroupSize.l },
                     { name: "fluidCount", type: "uint", value: this.simulationData.getFluidCount() },
-                    { name: "gridDim", type: "uint", value: gridDim }
+                    { name: "gridDim", type: "uint", value: this.simulationData.getGridDim() },
+                    { name: "massPerParticle", type: "float", value: this.simulationData.getMassPerParticle() },
+                    { name: "gridSpacing", type: "float", value: this.simulationData.getGridSpacing() },
+                    { name: "dt", type: "float", value: this.simulationData.getDt()},
+                    { name: "boundsMinX", type: "float", value: containerMin.x },
+                    { name: "boundsMinY", type: "float", value: containerMin.y },
+                    { name: "boundsMinZ", type: "float", value: containerMin.z },
                 ]
             }
         ]
@@ -71,6 +78,10 @@ class P2GCompute extends BaseCompute {
             {
                 name: "gridRem",
                 buffer: this.bufferManager.getGridRemainderBuffer()
+            },
+            {
+                name: "debug",
+                buffer: this.bufferManager.getDebugBuffer()
             }
         ];
 

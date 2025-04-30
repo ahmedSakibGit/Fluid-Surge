@@ -14,19 +14,21 @@ class SimulationManager {
     private containerManager: ContainerManager
 
     constructor(sceneManager: SceneManager, webGPUManager: WebGPUManager) {
-        this.simulationData = this.getSimulationData();
         this.sceneManager = sceneManager;
+        this.containerManager = this.sceneManager.getContainerManager();
+        this.sceneManager.setContainer();
+        this.simulationData = this.getSimulationData();
+        
         this.webGPUManager = webGPUManager;
         this.fluidManager = new Fluidmanager(this.simulationData, this.sceneManager);
         this.pipelineManager = new PipelineManager(this.webGPUManager, this.simulationData, this.sceneManager);
-        this.containerManager = this.sceneManager.getContainerManager();
+        
     }
 
     async init() {
-        this.sceneManager.setContainer();
         this.fluidManager.init();
-        const texture: BABYLON.RawTexture3D = await this.sceneManager.getContainderSDFTexture(this.simulationData.getSDFTextureResolution());
-        this.pipelineManager.init({positions: this.fluidManager.getParticleData(), sdfTexture: texture}, this.containerManager);
+        const texture: BABYLON.RawTexture3D = await this.sceneManager.getContainderSDFTexture(64);
+        this.pipelineManager.init({ positions: this.fluidManager.getParticleData(), sdfTexture: texture }, this.containerManager);
     }
 
     getSimulationData(): SimulationData {
@@ -37,12 +39,16 @@ class SimulationManager {
         const data = {
             filled: 0.5,
             fluidCount: 200000,
-            buffer: null,
-            fluidToGridRatio: 0.6667,
-            sdfTextureResolution: 64
+            restDensity: 4.0,  
+            stiffness: 3.0,
+            viscosity: 0.1,
+            dt: 0.2,
+            gravity: new BABYLON.Vector3(0.0, -98.1, 0.0),
+            gridSpacing: 0.05,
+            particleSpacing: 0.0325
         };
-
-        return new SimulationData(data);
+ 
+        return new SimulationData(data, this.containerManager);
     }
 }
 

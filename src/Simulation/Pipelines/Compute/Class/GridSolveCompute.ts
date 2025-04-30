@@ -9,7 +9,9 @@ class GridSolveCompute extends BaseCompute  {
     binding: BABYLON.ComputeBindingMapping = {
         grid: { group: 0, binding: 0 },
         gridRem: { group: 0, binding: 1 },
-        shaderData: { group: 0, binding: 2 },
+        debug: { group: 0, binding: 2 },
+        shaderData: { group: 0, binding: 3 },
+       
     }
 
     bytesPerThreadShared: number = 0;
@@ -29,14 +31,22 @@ class GridSolveCompute extends BaseCompute  {
     }
 
     prepSSBO() {
+        if (!this.computeShader || !this.containerManager) return;
+        const gravity = this.simulationData.getGravity();
+        const {world, worldInvert} = this.containerManager.getContainerMatrices();
         this.data.uniforms = [
             {
                 name: "shaderData",
                 entries: [
                     { name: "dispatchX", type: "uint", value: this.data.dispatch.x * this.data.workgroupSize.k },
                     { name: "dispatchY", type: "uint", value: this.data.dispatch.y * this.data.workgroupSize.l },
-                    { name: "NodeCount", type: "uint", value: this.simulationData.getGridNodeCount() },
-                    { name: "worldInvertMatrix", type: "mat4", value: BABYLON.Matrix.Identity() }
+                    { name: "nodeCount", type: "uint", value: this.simulationData.getGridNodeCount() },
+                    { name: "dt", type: "float", value: this.simulationData.getDt() },
+                    { name: "gravityX", type: "float", value: gravity.x },
+                    { name: "gravityY", type: "float", value: gravity.y },
+                    { name: "gravityZ", type: "float", value: gravity.z },
+                    { name: "worldInvertMatrix", type: "mat4", value: worldInvert },
+                    { name: "worldMatrix", type: "mat4", value: world },
                 ]
             }
         ]
@@ -49,6 +59,10 @@ class GridSolveCompute extends BaseCompute  {
             {
                 name: "gridRem",
                 buffer: this.bufferManager.getGridRemainderBuffer()
+            },
+            {
+                name: "debug",
+                buffer: this.bufferManager.getDebugBuffer()
             }
         ];
 
@@ -59,6 +73,7 @@ class GridSolveCompute extends BaseCompute  {
         if (!this.containerManager) return;
         const {world, worldInvert} = this.containerManager.getContainerMatrices();
         this.uniformBuffer.updateMatrix("worldInvertMatrix", worldInvert);
+        this.uniformBuffer.updateMatrix("worldMatrix", world);
         this.uniformBuffer.update();
     }
     

@@ -12,6 +12,7 @@ class BufferManager {
     private gridRemainderBuffer: BABYLON.StorageBuffer | null = null;
     private sdfTexture: BABYLON.RawTexture3D | null = null;
     private buffers: BABYLON.StorageBuffer[] = [];
+    private debugBuffer: BABYLON.StorageBuffer | null = null;
     
     constructor(engine: BABYLON.WebGPUEngine, simulationData: SimulationData) {
         this.engine = engine;
@@ -40,6 +41,11 @@ class BufferManager {
         this.C0Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.C1Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
         this.C2Buffer = new BABYLON.StorageBuffer(this.engine, positions.byteLength, otherBufferFlags);
+        
+        
+        this.C0Buffer.update(velocityvalues);
+        this.C1Buffer.update(velocityvalues);
+        this.C2Buffer.update(velocityvalues); 
         this.positionBuffer.update(positions);
         this.velocityBuffer.update(velocityvalues);
         this.buffers.push(this.positionBuffer);
@@ -92,11 +98,12 @@ class BufferManager {
     setGridBuffer() {
         const creationFlags = BABYLON.Constants.BUFFER_CREATIONFLAG_READWRITE;
         const gridLength = this.simulationData.getGridNodeCount();
-        const bytelength = gridLength * 4 * 4;
+        const bytelength = gridLength * 7 * 4;
         this.gridBuffer = new BABYLON.StorageBuffer(this.engine, bytelength, creationFlags);
         this.gridRemainderBuffer = new BABYLON.StorageBuffer(this.engine, bytelength, creationFlags);
         this.buffers.push(this.gridBuffer);
         this.buffers.push(this.gridRemainderBuffer);
+        this.debugBuffer = new BABYLON.StorageBuffer(this.engine, bytelength, creationFlags);
     }
 
     getGridBuffer() {
@@ -122,6 +129,15 @@ class BufferManager {
 
         return this.sdfTexture;
     }
+
+    getDebugBuffer() {
+        if (!this.debugBuffer) {
+            throw new Error("Debug buffer not initialized");
+        }
+
+        return this.debugBuffer;
+    }
+
 
 }
 

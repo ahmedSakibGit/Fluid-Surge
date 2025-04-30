@@ -6,10 +6,13 @@ struct ShaderData {
 };
 
 struct Node {
-    vx: i32,
-    vy: i32,
-    vz: i32,
-    mass: i32
+    vx: u32,
+    vxNeg: u32,
+    vy: u32,
+    vyNeg: u32,
+    vz: u32,
+    vzNeg: u32,
+    mass: u32
 };
 
 
@@ -30,12 +33,18 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     }
 
     grid[id].vx = 0;
+    grid[id].vxNeg = 0;
     grid[id].vy = 0;
+    grid[id].vyNeg = 0;
     grid[id].vz = 0;
+    grid[id].vzNeg = 0;
     grid[id].mass = 0;
     gridRem[id].vx = 0;
+    gridRem[id].vxNeg = 0;
     gridRem[id].vy = 0;
+    gridRem[id].vyNeg = 0;
     gridRem[id].vz = 0;
+    gridRem[id].vzNeg = 0;
     gridRem[id].mass = 0;
 
 }

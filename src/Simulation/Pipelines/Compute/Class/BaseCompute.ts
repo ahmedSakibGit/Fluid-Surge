@@ -115,9 +115,9 @@ class BaseCompute {
     }
     
 
-    update() {
+    async update() {
         if (!this.computeShader) return;
-        this.computeShader.dispatch(this.data.dispatch.x, this.data.dispatch.y, this.data.dispatch.z);
+        await this.computeShader.dispatchWhenReady(this.data.dispatch.x, this.data.dispatch.y, this.data.dispatch.z);
     }
 }
 

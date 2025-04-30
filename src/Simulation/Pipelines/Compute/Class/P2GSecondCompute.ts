@@ -14,6 +14,8 @@ class P2GSecondCompute extends BaseCompute {
         grid: { group: 0, binding: 5 },
         gridRem: { group: 0, binding: 6 },
         shaderData: { group: 0, binding: 7 },
+        debug: { group: 0, binding: 8 },
+        
     }
 
     bytesPerThreadShared: number = 0;
@@ -29,8 +31,7 @@ class P2GSecondCompute extends BaseCompute {
     }
 
     prepSSBO() {
-        const gridNodeCount = this.simulationData.getGridNodeCount();
-        const gridDim = Math.ceil(Math.cbrt(gridNodeCount));
+        const boundsMin = this.simulationData.getContainerMin();
         this.data.uniforms = [
             {
                 name: "shaderData",
@@ -38,7 +39,16 @@ class P2GSecondCompute extends BaseCompute {
                     { name: "dispatchX", type: "uint", value: this.data.dispatch.x * this.data.workgroupSize.k },
                     { name: "dispatchY", type: "uint", value: this.data.dispatch.y * this.data.workgroupSize.l },
                     { name: "fluidCount", type: "uint", value: this.simulationData.getFluidCount() },
-                    { name: "gridDim", type: "uint", value: gridDim }
+                    { name: "gridDim", type: "uint", value: this.simulationData.getGridDim() },
+                    { name: "stiffness", type: "float", value: this.simulationData.getStiffness() },
+                    { name: "viscosity", type: "float", value: this.simulationData.getViscosity() },
+                    { name: "dt", type: "float", value: this.simulationData.getDt() },
+                    { name: "restDensity", type: "float", value: this.simulationData.getRestDensity() },
+                    { name: "particleVolume", type: "float", value: this.simulationData.getParticleVolume() },
+                    { name: "gridSpacing", type: "float", value: this.simulationData.getGridSpacing() },
+                    { name: "boundsMinX", type: "float", value: boundsMin.x },
+                    { name: "boundsMinY", type: "float", value: boundsMin.y },
+                    { name: "boundsMinZ", type: "float", value: boundsMin.z },
                 ]
             }
         ]
@@ -71,6 +81,10 @@ class P2GSecondCompute extends BaseCompute {
             {
                 name: "gridRem",
                 buffer: this.bufferManager.getGridRemainderBuffer()
+            },
+            {
+                name: "debug",
+                buffer: this.bufferManager.getDebugBuffer()
             }
         ];
 

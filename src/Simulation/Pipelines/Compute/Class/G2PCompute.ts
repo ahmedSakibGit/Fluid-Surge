@@ -16,6 +16,8 @@ class G2PCompute extends BaseCompute {
         grid: { group: 0, binding: 5 },
         gridRem: { group: 0, binding: 6 },
         shaderData: { group: 0, binding: 7 },
+        debug: { group: 0, binding: 8 },
+        
     }
 
     bytesPerThreadShared: number = 0;
@@ -35,11 +37,9 @@ class G2PCompute extends BaseCompute {
 
     prepSSBO() {
         if (!this.computeShader || !this.containerManager) return;
-        const gridNodeCount = this.simulationData.getGridNodeCount();
-        const gridDim = Math.ceil(Math.cbrt(gridNodeCount));
+        const gridDim = this.simulationData.getGridDim();
         const { boundsMin, boundsMax } = this.containerManager.getBounds();
         const { world, worldInvert } = this.containerManager.getContainerMatrices();
-        console.log(boundsMin, boundsMax);
         this.data.uniforms = [
             {
                 name: "shaderData",
@@ -55,7 +55,9 @@ class G2PCompute extends BaseCompute {
                     { name: "boundsMaxY", type: "float", value: boundsMax.y },
                     { name: "boundsMaxZ", type: "float", value: boundsMax.z },
                     { name: "worldMatrix", type: "mat4", value: world },
-                    { name: "worldInvertMatrix", type: "mat4", value: worldInvert }
+                    { name: "worldInvertMatrix", type: "mat4", value: worldInvert },
+                    { name: "dt", type: "float", value: this.simulationData.getDt() },
+                    { name: "gridSpacing", type: "float", value: this.simulationData.getGridSpacing() },
                 ]
             }
         ]
@@ -88,6 +90,10 @@ class G2PCompute extends BaseCompute {
             {
                 name: "gridRem",
                 buffer: this.bufferManager.getGridRemainderBuffer()
+            },
+            {
+                name: "debug",
+                buffer: this.bufferManager.getDebugBuffer()
             }
         ];
     }

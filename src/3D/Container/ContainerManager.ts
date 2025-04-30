@@ -12,7 +12,8 @@ class ContainerManager {
         const cube = new Cube(this.scene, 5);
         this.container = cube.getMesh();
         this.container.isVisible = true;
-        this.startComputeInterval();
+        //this.container.rotation.z = 0.5;
+        //this.startComputeInterval();
     }
 
     getCurrentContainer(): BABYLON.Mesh {
@@ -173,6 +174,23 @@ class ContainerManager {
             world: this.container.getWorldMatrix()
         };
     }
+
+    getVolume(filled: number): number {
+        const bounds = this.getContainerBounds();
+        const min = BABYLON.Vector3.FromArray(bounds.min);
+        const max = BABYLON.Vector3.FromArray(bounds.max);
+        const size = max.subtract(min);
+        return size.x * size.y * size.z * filled;
+    }
+    
+    getContainerSize(): number {
+        const bounds = this.getContainerBounds();
+        const min = BABYLON.Vector3.FromArray(bounds.min);
+        const max = BABYLON.Vector3.FromArray(bounds.max);
+        const size = max.subtract(min);
+        return size.x;
+    }
+    
 
     private startComputeInterval() {
         setInterval(() => {

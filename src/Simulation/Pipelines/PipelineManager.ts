@@ -33,9 +33,12 @@ class PipelineManager {
     }
 
     private startRenderLoop() {
+        this.scene.onBeforeRenderObservable.add(async () => {
+            await this.computePipeline.update();
+        });
         const engine = this.scene.getEngine();
         engine.runRenderLoop(() => {
-            this.computePipeline.update();
+           // await this.computePipeline.update();
             this.scene.render();
         });
     }
