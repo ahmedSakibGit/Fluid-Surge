@@ -37,14 +37,10 @@ FluidSurge is a high-performance real-time fluid simulation framework built from
           └──────┬───────────┘
                  ▼
         ┌──────────────────┐
-        │ Compute Shader 1 │  ← Mass / Velocity encoding
-        └──────┬───────────┘
-                 ▼
+        │ Compute Shaders  │  ← Mass / Velocity encoding, updating fluid poistions from the grid
+        └─────-┬───────────┘
+                ▼
         ┌──────────────────┐
-        │ Compute Shader 2 │  ← Forces, Position Update
-        └──────┬───────────┘
-                 ▼
-        ┌──────────────────┐
-        │ ShaderMaterial   │  ← Screen-aligned quads
+        │ ShaderMaterial   │  ← Screen-aligned quads gets updated positions, flulid moves in real time
         │ Renderer (SSFR)  │
         └──────────────────┘
