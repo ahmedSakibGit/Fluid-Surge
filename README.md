@@ -4,6 +4,8 @@
 
 FluidSurge is a high-performance real-time fluid simulation framework built from the ground up using **WebGPU**, **WGSL compute shaders**, and **Babylon.js**. It demonstrates advanced GPU compute pipelines, rendering systems, and particle-based fluid physics — all running **entirely on the GPU** with zero CPU bottlenecks.
 
+The goal is to generate per particle data of fluid in real time on the web among cross platform devices, for generative AI/ML learning, and for game engines.
+
 <img width="1281" alt="image" src="https://github.com/user-attachments/assets/fc5927e7-e61e-407c-82ec-353890766113" />
 
 
