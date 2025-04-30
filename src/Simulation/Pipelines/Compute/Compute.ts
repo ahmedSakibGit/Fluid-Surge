@@ -44,30 +44,7 @@ class Compute {
         await this.gridClearCompute.update();
         await this.p2GCompute.update();
         await this.P2GSecondCompute.update();
-        await this.GridSolveCompute.update();
-        // this.GridSolveCompute.updateUniforms();
-         await this.G2PCompute.update();
-       // this.G2PCompute.updateUniforms();
-        // const grid = this.bufferManager.getGridBuffer();
-        // const gridRem = this.bufferManager.getGridRemainderBuffer();
-
-        // const gridData = await grid.read(); // returns Uint32Array or ArrayBuffer
-        // const remData = await gridRem.read(); // returns Uint32Array or ArrayBuffer
-    
-        // console.log(new Uint32Array(gridData.buffer));
-        // console.log(new Uint32Array(remData.buffer)); // view as raw bits 
-
-        // // //  // ✅ Now this prints correct float values (including negative ones)
-        // // // // //this.GridSolveCompute.updateUniforms();
-        
-
-        // const debug = this.bufferManager.getDebugBuffer();
-        // const debugData = await debug.read(); // returns Uint32Array or ArrayBuffer
-
-        
-        // console.log(new Float32Array(debugData.buffer));
-        
-        
+        await this.GridSolveCompute.update();    
          
     }
 
