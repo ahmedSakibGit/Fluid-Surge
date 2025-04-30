@@ -1,4 +1,4 @@
-# FluidSurge 🧪⚡
+# FluidSurge
 
 **Real-time GPU-Driven Fluid Simulation in WebGPU**
 
@@ -9,26 +9,26 @@ FluidSurge is a high-performance real-time fluid simulation framework built from
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🔧 **Multi-Pass Compute Shaders**  
+-  **Multi-Pass Compute Shaders**  
   Implements an **MLS-MPM–inspired pipeline**, with multi-stage particle updates for mass, velocity, and pressure — optimized with `float4`-aligned GPU buffers.
 
-- 🧠 **Atomic Operation Workaround (AtomicF32)**  
-  WebGPU lacks atomic operations on floats — solved using a **custom fixed-point encoding system** using dual `u32` registers to simulate `f32` accumulation atomically.
+-  **Atomic Operation Workaround (AtomicF32)**  
+  WebGPU lacks atomic operations on floats — solved using a **custom fixed-point encoding system** using dual `u32` registers to simulate `f32` accumulation atomically, resultiing in numerical stability across multiple compute passes
 
-- 🌀 **SSFR Rendering (Screen Space Fluid Rendering)**  
+-  **SSFR Rendering (Screen Space Fluid Rendering)**  
   Fluid particles are rendered using **GPU-generated quads** with a custom ShaderMaterial in Babylon.js, designed for high-quality screen-aligned fluid appearance.
 
-- 📦 **GPU-Only Data Flow**  
+-  **GPU-Only Data Flow**  
   Entire physics and rendering data loop remains **on the GPU** — compute shader output is passed directly into the rendering stage with **no CPU-GPU sync overhead**.
 
-- ⚙️ **Spatial Workgroup Optimization**  
+- **Spatial Workgroup Optimization**  
   Dynamic dispatch of compute workgroups based on local turbulence — using intensity metrics to scale GPU load intelligently.
 
 ---
 
-## 🧱 Architecture
+##  Architecture
 
 ```text
           ┌──────────────────┐
