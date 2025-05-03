@@ -46,3 +46,5 @@ The goal is to generate per particle data of fluid in real time on the web among
         │ ShaderMaterial   │  ← Screen-aligned quads gets updated positions, flulid moves in real time
         │ Renderer (SSFR)  │
         └──────────────────┘
+
+Note: This codebase is a work-in-progress R&D prototype. All rights reserved by author unless otherwise agreed.
