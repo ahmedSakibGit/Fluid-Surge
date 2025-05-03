@@ -8,7 +8,7 @@ The goal is to generate per particle data of fluid in real time on the web among
 
 <img width="1281" alt="image" src="https://github.com/user-attachments/assets/fc5927e7-e61e-407c-82ec-353890766113" />
 
-
+Note: This codebase is a work-in-progress R&D prototype. All rights reserved by author unless otherwise agreed.
 ---
 
 ## Features
@@ -47,4 +47,4 @@ The goal is to generate per particle data of fluid in real time on the web among
         │ Renderer (SSFR)  │
         └──────────────────┘
 
-Note: This codebase is a work-in-progress R&D prototype. All rights reserved by author unless otherwise agreed.
+
